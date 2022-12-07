@@ -1,0 +1,7 @@
+_target_: paper_src.models.GRULatentSAE
+input_size: 10
+encoder_size: 64
+latent_size: 25
+learning_rate: 1.0e-3
+weight_decay: 1.0e-4
+dropout: 0.05

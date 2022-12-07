@@ -1,0 +1,39 @@
+defaults:
+  - model: gru
+  - datamodule: arneodo
+  - _self_
+
+seed: 0
+
+trainer:
+  _target_: pytorch_lightning.Trainer
+  log_every_n_steps: 20
+  max_epochs: 3000
+
+callbacks:
+  model_checkpoint:
+    _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    dirpath: "."
+    monitor: valid/loss
+    save_last: True
+  raster_plot_callback:
+    _target_: paper_src.callbacks.RasterPlot
+    log_every_n_epochs: 100
+  trajectory_plot_callback:
+    _target_: paper_src.callbacks.TrajectoryPlot
+    log_every_n_epochs: 100
+  latent_regression_plot_callback:
+    _target_: paper_src.callbacks.LatentRegressionPlot
+    log_every_n_epochs: 100
+
+logger:
+  tensorboard_logger:
+    _target_: pytorch_lightning.loggers.TensorBoardLogger
+    save_dir: "."
+    version: ""
+    name: ""
+  csv_logger:
+    _target_: pytorch_lightning.loggers.CSVLogger
+    save_dir: "."
+    version: ""
+    name: ""

@@ -1,0 +1,12 @@
+numpy
+pandas
+scikit-learn
+torch
+pytorch-lightning==1.6
+h5py
+matplotlib
+ipykernel
+hydra-core
+ray[tune]
+torchdyn==1.0.1
+dysts
