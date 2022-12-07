@@ -39,9 +39,10 @@ tune.run(
     mode="min",
     name=RUN_DIR.name,
     config={
-        "model": tune.grid_search(["gru", "node"]),
+        "datamodule": tune.grid_search(["arneodo", "lorenz", "rossler"]),
+        "model": tune.grid_search(["v2_gru", "v2_node"]),
         "model.latent_size": tune.grid_search([2, 3, 5, 10, 25, 50, 100]),
-        # "seed": tune.grid_search([0, 1, 2, 3, 4]),
+        "seed": tune.grid_search([0, 1, 2, 3, 4]),
     },
     resources_per_trial=dict(cpu=2, gpu=0.5),
     num_samples=1,

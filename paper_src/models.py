@@ -22,6 +22,16 @@ class RNN(nn.Module):
         return states, hidden
 
 
+class MLPCell(nn.Module):
+    def __init__(self, network):
+        super().__init__()
+        self.network = network
+
+    def forward(self, input, hidden):
+        input_hidden = torch.cat([hidden, input], dim=1)
+        return hidden + 0.1 * self.network(input_hidden)
+
+
 class AbstractLatentSAE(pl.LightningModule):
     def __init__(
         self,
@@ -242,3 +252,86 @@ class NODELatentSAE(AbstractLatentSAE):
         loss = torch.mean(loss_all * weight)
         self.log("valid/loss", loss)
         return loss
+
+
+class LatentSAEv2(pl.LightningModule):
+    def __init__(
+        self,
+        input_size: int,
+        encoder_size: int,
+        latent_size: int,
+        dynamics: nn.Module,
+        dropout: float,
+        learning_rate: float,
+        weight_decay: float,
+    ):
+        super().__init__()
+        self.save_hyperparameters(ignore=["dynamics"])
+        # Instantiate bidirectional GRU encoder
+        self.encoder = nn.GRU(
+            input_size=input_size,
+            hidden_size=encoder_size,
+            batch_first=True,
+            bidirectional=True,
+        )
+        # Instantiate linear mapping to initial conditions
+        self.ic_linear = nn.Linear(2 * encoder_size, latent_size)
+        # Store the dynamics model
+        self.dynamics = dynamics
+        # Instantiate linear readout
+        self.readout = nn.Linear(
+            in_features=latent_size,
+            out_features=input_size,
+        )
+        # Instantiate dropout
+        self.dropout = nn.Dropout(p=dropout)
+
+
+    def forward(self, data):
+        # Pass data through the model
+        _, h_n = self.encoder(data)
+        # Combine output from fwd and bwd encoders
+        h_n = torch.cat([*h_n], -1)
+        # Compute initial condition with dropout
+        h_n_drop = self.dropout(h_n)
+        ic = self.ic_linear(h_n_drop)
+        ic_drop = self.dropout(ic)
+        # Create an empty input tensor
+        B, T, _ = data.shape
+        input_placeholder = torch.zeros((B, T, 1), device=self.device)
+        # Unroll the dynamics
+        latents, _ = self.dynamics(input_placeholder, ic_drop)
+        # Map decoder state to data dimension
+        logrates = self.readout(latents)
+        return logrates, latents
+
+
+    def configure_optimizers(self):
+        return torch.optim.Adam(
+            self.parameters(),
+            lr=self.hparams.learning_rate,
+            weight_decay=self.hparams.weight_decay,
+        )
+
+    def _shared_step(self, batch, batch_ix, split):
+        spikes, rates, latents, _ = batch
+        # Pass data through the model
+        pred_logrates, pred_latents = self.forward(spikes)
+        # Compute the loss
+        nll = F.poisson_nll_loss(pred_logrates, spikes, full=True)
+        # Prepare the data for metrics
+        pred_rates = torch.exp(pred_logrates)
+        # Compute the results
+        results = {
+            f"{split}/r2_observ": r2_score(pred_rates, rates),
+            f"{split}/r2_latent": regression_r2_score(latents, pred_latents),
+            f"{split}/loss": nll,
+        }
+        self.log_dict(results)        
+        return nll
+
+    def training_step(self, batch, batch_ix):
+        return self._shared_step(batch, batch_ix, "train")
+
+    def validation_step(self, batch, batch_ix):
+        return self._shared_step(batch, batch_ix, "valid")

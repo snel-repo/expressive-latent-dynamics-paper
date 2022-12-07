@@ -1,20 +1,27 @@
 import logging
 from typing import List, Optional
 from pathlib import Path
+import warnings
 
 import hydra
 import pytorch_lightning as pl
 import torch
+from omegaconf import OmegaConf
 
 from .utils import flatten
 
 log = logging.getLogger(__name__)
-
+# Add custom resolver to allow addition in the config
+OmegaConf.register_new_resolver("add", lambda a, b: a + b)
 
 def train(overrides: dict, config_path: str) -> Optional[float]:
     # Format the overrides so they can be used by hydra
     config_path = Path(config_path)
     overrides = [f"{k}={v}" for k, v in flatten(overrides).items()]
+    # Avoid flooding the console with output during multi-model runs
+    if config.ignore_warnings:
+        logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
+        warnings.filterwarnings("ignore")
     # Compose the train config
     with hydra.initialize(config_path=config_path.parent, job_name="train"):
         config = hydra.compose(config_name=config_path.name, overrides=overrides)

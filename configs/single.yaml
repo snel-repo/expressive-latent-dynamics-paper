@@ -4,6 +4,7 @@ defaults:
   - _self_
 
 seed: 0
+ignore_warnings: False
 
 trainer:
   _target_: pytorch_lightning.Trainer

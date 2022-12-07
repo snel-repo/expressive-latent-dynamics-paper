@@ -1,0 +1,21 @@
+_target_: paper_src.models.LatentSAEv2
+input_size: 10
+encoder_size: 64
+latent_size: 3
+dynamics:
+  _target_: paper_src.models.RNN
+  cell:
+    _target_: paper_src.models.MLPCell
+    network:
+      _target_: torch.nn.Sequential
+      _args_:
+        - _target_: torch.nn.Linear
+          in_features: ${add:1, ${model.latent_size}}
+          out_features: 128
+        - _target_: torch.nn.ReLU
+        - _target_: torch.nn.Linear
+          in_features: 128
+          out_features: ${model.latent_size}
+dropout: 0.05
+learning_rate: 5.0e-3
+weight_decay: 1.0e-5
