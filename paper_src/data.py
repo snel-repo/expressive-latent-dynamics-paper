@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 
 import h5py
 import numpy as np
@@ -27,7 +28,7 @@ class ChaoticDataModule(pl.LightningDataModule):
         pts_per_period: int = 35,
         seed: int = 0,
         batch_size: int = 650,
-        data_home="/snel/share/data/dysts-learning",
+        data_home: str = Path(__file__).parent / "../datasets",
     ):
         super().__init__()
         self.save_hyperparameters()
