@@ -1,0 +1,6 @@
+{
+  "config_train": "config_expt1_train_gru.yaml",
+  "model": {
+    "latent_size": 25
+  }
+}

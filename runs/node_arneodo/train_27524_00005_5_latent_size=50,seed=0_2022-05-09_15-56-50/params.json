@@ -1,0 +1,7 @@
+{
+  "config_train": "config_expt1_train_node.yaml",
+  "model": {
+    "latent_size": 50
+  },
+  "seed": 0
+}
