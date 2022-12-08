@@ -16,7 +16,7 @@ If you find this code useful in your research, please cite the accompanying prep
 - `scipts/training` - Scripts that retrain single models or multiple models in parallel using [`ray.tune`](https://docs.ray.io/en/latest/tune/index.html)
 
 ## Installation
-After cloning the repo, install the codebase in a `conda` environment and use `pip` to install the `paper_src` package and its dependencies.
+After cloning the repo, create a `conda` environment and use `pip` to install the `paper_src` package and its dependencies.
 ```
 conda create -n expressive-paper python=3.9
 cd expressive-latent-dynamics-paper
