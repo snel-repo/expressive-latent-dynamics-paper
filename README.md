@@ -13,7 +13,7 @@ If you find this code useful in your research, please cite the accompanying prep
 - `datasets` - Synthetic HDF5 datasets generated using `paper_src.data.ChaoticDataModule`
 - `runs` - Checkpoints, training logs, and hyperparameters for models used in paper figures (Note: some files, including Tensorboard logs, have been removed to conserve space)
 - `scripts/analysis` - Scripts that generate paper figures using trained models
-- `scipts/training` - Scripts that retrain single models or multiple models in parallel using [`ray.tune`]
+- `scipts/training` - Scripts that retrain single models or multiple models in parallel using [`ray.tune`](https://docs.ray.io/en/latest/tune/index.html)
 
 ## Installation
 After cloning the repo, install the codebase in a `conda` environment and use `pip` to install the `paper_src` package and its dependencies.
@@ -33,7 +33,7 @@ To reproduce figures from the paper, move to the `scripts/analysis` directory an
 ## Training Models from Scratch
 To train a single new model, move to the `scripts/analysis` directory and run the `train_single.py` script. This script will compose a configuration from the base config at `configs/single.yaml`. To overwrite the defaults defined in this config, you may edit the config itself or specify overrides directly to the train function. Model checkpoints and training logs will be stored at `runs/user_runs/single`.
 
-To train many models in parallel, use the `train_multi.py` script. The script is set up to train all model-dataset combinations used in the paper ($N=210$), on multiple GPUs, with several models per GPU. Please refer to the [docs](https://docs.ray.io/en/latest/tune/index.html) for more information about the `ray.tune` API.
+To train many models in parallel, use the `train_multi.py` script. The script is set up to train all model-dataset combinations used in the paper (N=210), on multiple GPUs, with several models per GPU. Please refer to the [docs](https://docs.ray.io/en/latest/tune/index.html) for more information about the `ray.tune` API.
 
 Note that `run_multi.py` script will put all of the runs in the same folder, which will need to be loaded slightly differently to be compatible with the analysis pipeline. However, loading from a single folder should be similar to, but easier than, loading from several subfolders.
 
