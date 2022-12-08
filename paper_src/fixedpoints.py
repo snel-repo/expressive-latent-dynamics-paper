@@ -1,7 +1,8 @@
 import numpy as np
 import pytorch_lightning as pl
 import torch
-from fixed_point_finder.utils import FixedPoints
+
+from .golub import FixedPoints
 
 
 def get_sys_fps(system):
