@@ -36,7 +36,7 @@ class ChaoticDataModule(pl.LightningDataModule):
         # Generate the dataset tag
         self.name = (
             f"{system}{obs_dim}_{n_samples}S_{n_timesteps}T_{pts_per_period}P"
-            f"_{seed}seed"
+            f"_{seed}seed_poisson"
         )
 
     def prepare_data(self):

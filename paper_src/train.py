@@ -18,13 +18,13 @@ def train(overrides: dict, config_path: str) -> Optional[float]:
     # Format the overrides so they can be used by hydra
     config_path = Path(config_path)
     overrides = [f"{k}={v}" for k, v in flatten(overrides).items()]
+    # Compose the train config
+    with hydra.initialize(config_path=config_path.parent, job_name="train"):
+        config = hydra.compose(config_name=config_path.name, overrides=overrides)
     # Avoid flooding the console with output during multi-model runs
     if config.ignore_warnings:
         logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
         warnings.filterwarnings("ignore")
-    # Compose the train config
-    with hydra.initialize(config_path=config_path.parent, job_name="train"):
-        config = hydra.compose(config_name=config_path.name, overrides=overrides)
     # Set seed for pytorch, numpy, and python.random
     if "seed" in config:
         pl.seed_everything(config.seed, workers=True)
@@ -60,4 +60,5 @@ def train(overrides: dict, config_path: str) -> Optional[float]:
         _convert_="all",
     )
     # Begin training
+    # trainer.tune(model=model, datamodule=datamodule)
     trainer.fit(model=model, datamodule=datamodule)

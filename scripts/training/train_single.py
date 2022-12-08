@@ -30,8 +30,10 @@ shutil.copyfile(__file__, RUN_DIR / Path(__file__).name)
 os.chdir(RUN_DIR)
 train(
     overrides={
-        "model": "gru",
-        "model.latent_size": 69,
+        "datamodule": "arneodo",
+        "model": "node",
+        "model.latent_size": 3,
+        "seed": 0
     },
     config_path=CONFIG_PATH,
 )
