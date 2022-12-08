@@ -14,8 +14,8 @@ from paper_src.train import train
 # ---------- OPTIONS -----------
 LOCAL_MODE = False
 OVERWRITE = True
-RUN_TAG = datetime.now().strftime("%Y%m%d") + "_all_runs"
-RUNS_HOME = Path("/snel/share/runs/expressive-latent-dynamics-paper/")
+RUN_TAG = datetime.now().strftime("%Y%m%d") + "_my_run"
+RUNS_HOME = Path("../../runs/user_runs")
 RUN_DIR = RUNS_HOME / "multi" / RUN_TAG
 CONFIG_PATH = Path("../configs/multi.yaml")
 # ------------------------------
