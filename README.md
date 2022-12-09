@@ -19,6 +19,7 @@ If you find this code useful in your research, please cite the accompanying prep
 After cloning the repo, create a `conda` environment and use `pip` to install the `paper_src` package and its dependencies.
 ```
 conda create -n expressive-paper python=3.9
+conda activate expressive-paper
 cd expressive-latent-dynamics-paper
 pip install -e .
 ```
