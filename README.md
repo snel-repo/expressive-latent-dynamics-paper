@@ -3,9 +3,9 @@ Experiments that probe the relationship between expressivity and interpretabilit
 
 If you find this code useful in your research, please cite the accompanying preprint:
 
->Sedler, A, Versteeg, C, Pandarinath, C. "Expressive architectures enhance interpretability of dynamics-based neural population models". arXiv 2022. https://arxiv.org/abs/2212.03771.
+>Sedler, A, Versteeg, C, Pandarinath, C. "Expressive architectures enhance interpretability of dynamics-based neural population models". arXiv 2022. https://doi.org/10.48550/arXiv.2212.03771.
 
-[![arXiv](https://img.shields.io/badge/arXiv-2212.03771-b31b1b.svg)](https://arxiv.org/abs/2212.03771)
+[![arXiv](https://img.shields.io/badge/arXiv-2212.03771-b31b1b.svg)](https://doi.org/10.48550/arXiv.2212.03771)
 
 ## Codebase Structure
 - `paper_src` - Source code that defines core dataset generation, model architecture, training, and evaluation functionality
