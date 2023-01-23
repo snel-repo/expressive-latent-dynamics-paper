@@ -1,0 +1,7 @@
+{
+  "datamodule": "arneodo_100",
+  "model": "gru",
+  "model.input_size": 100,
+  "model.latent_size": 2,
+  "seed": 4
+}

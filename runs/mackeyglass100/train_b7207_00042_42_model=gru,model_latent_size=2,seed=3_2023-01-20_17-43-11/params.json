@@ -1,0 +1,6 @@
+{
+  "datamodule": "mackeyglass100",
+  "model": "gru",
+  "model.latent_size": 2,
+  "seed": 3
+}

@@ -30,9 +30,9 @@ shutil.copyfile(__file__, RUN_DIR / Path(__file__).name)
 os.chdir(RUN_DIR)
 train(
     overrides={
-        "datamodule": "arneodo",
+        "datamodule": "mackeyglass100",
         "model": "node",
-        "model.latent_size": 3,
+        "model.latent_size": 10,
         "seed": 0
     },
     config_path=CONFIG_PATH,

@@ -1,0 +1,6 @@
+{
+  "datamodule": "mackeyglass100",
+  "model": "node",
+  "model.latent_size": 25,
+  "seed": 1
+}
