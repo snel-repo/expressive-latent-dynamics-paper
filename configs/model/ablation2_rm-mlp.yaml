@@ -1,11 +1,14 @@
 _target_: paper_src.models.RNNLatentSAE
 rnn_cell:
-  _target_: torch.nn.GRUCell
+  _target_: paper_src.models.AblatedNODECell
   input_size: 1
   hidden_size: ${model.latent_size}
+  mlp_hidden_dims: []
 input_size: ${datamodule.obs_dim}
 encoder_size: 64
-latent_size: 25
-learning_rate: 1.0e-3
-weight_decay: 1.0e-4
+latent_size: 3
+learning_rate: 1.0e-2
+weight_decay: 0.0
 dropout: 0.05
+points_per_group: 20
+epochs_per_group: 500

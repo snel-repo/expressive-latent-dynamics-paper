@@ -31,6 +31,8 @@ class AbstractLatentSAE(pl.LightningModule):
         learning_rate: float,
         weight_decay: float,
         dropout: float,
+        points_per_group: int,
+        epochs_per_group: int,
     ):
         super().__init__()
         # Instantiate bidirectional GRU encoder
@@ -68,9 +70,8 @@ class AbstractLatentSAE(pl.LightningModule):
             weight_decay=self.hparams.weight_decay,
         )
         return optimizer
-
-    def training_step(self, batch, batch_ix):
-
+    
+    def _shared_step(self, batch, batch_ix, split):
         spikes, rates, latents, _ = batch
         # Pass data through the model
         pred_logrates, pred_latents = self.forward(spikes)
@@ -86,18 +87,18 @@ class AbstractLatentSAE(pl.LightningModule):
         )
         # Compute the results
         results = {
-            "train/r2_observ": r2_score(pred_rates, rates),
-            "train/r2_observ/early": r2_score(early_pred_rates, early_rates),
-            "train/r2_observ/middle": r2_score(mid_pred_rates, mid_rates),
-            "train/r2_observ/late": r2_score(late_pred_rates, late_rates),
-            "train/r2_latent": regression_r2_score(latents, pred_latents),
-            "train/r2_latent/early": regression_r2_score(
+            f"{split}/r2_observ": r2_score(pred_rates, rates),
+            f"{split}/r2_observ/early": r2_score(early_pred_rates, early_rates),
+            f"{split}/r2_observ/middle": r2_score(mid_pred_rates, mid_rates),
+            f"{split}/r2_observ/late": r2_score(late_pred_rates, late_rates),
+            f"{split}/r2_latent": regression_r2_score(latents, pred_latents),
+            f"{split}/r2_latent/early": regression_r2_score(
                 early_latents, early_pred_latents
             ),
-            "train/r2_latent/middle": regression_r2_score(
+            f"{split}/r2_latent/middle": regression_r2_score(
                 mid_latents, mid_pred_latents
             ),
-            "train/r2_latent/late": regression_r2_score(
+            f"{split}/r2_latent/late": regression_r2_score(
                 late_latents, late_pred_latents
             ),
         }
@@ -106,54 +107,28 @@ class AbstractLatentSAE(pl.LightningModule):
         loss_all = F.poisson_nll_loss(
             pred_logrates, spikes, full=True, reduction="none"
         )
-        return loss_all
+        # Incrementally consider more points in the loss
+        total_points = loss_all.shape[1]
+        group_number = int(self.current_epoch / self.hparams.epochs_per_group) + 1
+        num_points = min(group_number * self.hparams.points_per_group, total_points)
+        self.log(f"{split}/num_points", float(num_points))
+        # Compute weighted loss
+        loss = torch.mean(loss_all[:, :num_points, :])
+        self.log(f"{split}/loss", loss)
+        return loss
+    
+    def training_step(self, batch, batch_ix):
+        return self._shared_step(batch, batch_ix, "train")
 
     def validation_step(self, batch, batch_ix):
-
-        spikes, rates, latents, _ = batch
-        # Pass data through the model
-        pred_logrates, pred_latents = self.forward(spikes)
-        # Prepare the data for metrics
-        pred_rates = torch.exp(pred_logrates)
-        early_rates, mid_rates, late_rates = torch.chunk(rates, 3, dim=1)
-        early_pred_rates, mid_pred_rates, late_pred_rates = torch.chunk(
-            pred_rates, 3, dim=1
-        )
-        early_latents, mid_latents, late_latents = torch.chunk(latents, 3, dim=1)
-        early_pred_latents, mid_pred_latents, late_pred_latents = torch.chunk(
-            pred_latents, 3, dim=1
-        )
-        # Compute the results
-        results = {
-            "valid/r2_observ": r2_score(pred_rates, rates),
-            "valid/r2_observ/early": r2_score(early_pred_rates, early_rates),
-            "valid/r2_observ/middle": r2_score(mid_pred_rates, mid_rates),
-            "valid/r2_observ/late": r2_score(late_pred_rates, late_rates),
-            "valid/r2_latent": regression_r2_score(latents, pred_latents),
-            "valid/r2_latent/early": regression_r2_score(
-                early_latents, early_pred_latents
-            ),
-            "valid/r2_latent/middle": regression_r2_score(
-                mid_latents, mid_pred_latents
-            ),
-            "valid/r2_latent/late": regression_r2_score(
-                late_latents, late_pred_latents
-            ),
-        }
-        self.log_dict(results)
-        # Compute the weighted loss
-        loss_all = F.poisson_nll_loss(
-            pred_logrates, spikes, full=True, reduction="none"
-        )
-        return loss_all
+        return self._shared_step(batch, batch_ix, "valid")
 
 
-class GRULatentSAE(AbstractLatentSAE):
-    def __init__(self, **kwargs):
+class RNNLatentSAE(AbstractLatentSAE):
+    def __init__(self, rnn_cell: nn.Module, **kwargs):
         super().__init__(**kwargs)
-        self.save_hyperparameters()
-        latent_size = self.hparams.latent_size
-        self.decoder = RNN(nn.GRUCell(input_size=1, hidden_size=latent_size))
+        self.save_hyperparameters(ignore=["rnn_cell"])
+        self.decoder = RNN(rnn_cell)
 
     def forward(self, data):
         ic_drop = super().forward(data)
@@ -166,25 +141,11 @@ class GRULatentSAE(AbstractLatentSAE):
         logrates = self.readout(latents)
         return logrates, latents
 
-    def training_step(self, batch, batch_ix):
-        loss_all = super().training_step(batch, batch_ix)
-        loss = torch.mean(loss_all)
-        self.log("train/loss", loss)
-        return loss
-
-    def validation_step(self, batch, batch_ix):
-        loss_all = super().validation_step(batch, batch_ix)
-        loss = torch.mean(loss_all)
-        self.log("valid/loss", loss)
-        return loss
-
 
 class NODELatentSAE(AbstractLatentSAE):
     def __init__(
         self,
         vf_hidden_size: int,
-        points_per_group: int,
-        epochs_per_group: int,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -209,36 +170,32 @@ class NODELatentSAE(AbstractLatentSAE):
         logrates = self.readout(latents)
         return logrates, latents
 
-    def training_step(self, batch, batch_ix):
-        loss_all = super().training_step(batch, batch_ix)
-        total_points = loss_all.shape[1]
-        # Incrementally consider more points in the loss
-        group_number = int(self.current_epoch / self.hparams.epochs_per_group) + 1
-        num_points = min(group_number * self.hparams.points_per_group, total_points)
-        self.log("train/num_points", float(num_points))
-        weight = torch.ones(total_points)
-        weight[num_points:] = 0
-        # Ensure the sum of the weights does not change
-        weight = weight / weight.sum() * total_points
-        weight = weight[None, :, None].to(self.device)
-        # Compute weighted loss
-        loss = torch.mean(loss_all * weight)
-        self.log("train/loss", loss)
-        return loss
 
-    def validation_step(self, batch, batch_ix):
-        loss_all = super().validation_step(batch, batch_ix)
-        total_points = loss_all.shape[1]
-        # Incrementally consider more points in the loss
-        group_number = int(self.current_epoch / self.hparams.epochs_per_group) + 1
-        num_points = min(group_number * self.hparams.points_per_group, total_points)
-        self.log("valid/num_points", float(num_points))
-        weight = torch.ones(total_points)
-        weight[num_points:] = 0
-        # Ensure the sum of the weights does not change
-        weight = weight / weight.sum() * total_points
-        weight = weight[None, :, None].to(self.device)
-        # Compute weighted loss
-        loss = torch.mean(loss_all * weight)
-        self.log("valid/loss", loss)
-        return loss
+class AblatedNODECell(nn.RNNCell):
+    def __init__(
+        self,
+        input_size: int,
+        hidden_size: int,
+        bias: bool = True,
+        dt: float = 0.1,
+        mlp_hidden_dims: list[int] = [128],
+    ):
+        super().__init__(input_size, hidden_size, bias)
+        self.dt = dt
+
+        if len(mlp_hidden_dims) > 0:
+            layers = []
+            layer_in_dim = hidden_size + input_size
+            for layer_out_dim in mlp_hidden_dims:
+                layers.extend([nn.Linear(layer_in_dim, layer_out_dim), nn.ReLU()])
+                layer_in_dim = layer_out_dim
+            self.mlp = nn.Sequential(*layers, nn.Linear(layer_in_dim, hidden_size))            
+
+    def forward(self, input, hidden):
+        if hasattr(self, "mlp"):
+            output = self.mlp(torch.cat([input, hidden], dim=1))
+        else:
+            output = super().forward(input, hidden)
+        if self.dt:
+            output = hidden + self.dt * output
+        return output
