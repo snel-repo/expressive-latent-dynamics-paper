@@ -1,0 +1,5 @@
+{
+  "datamodule": "arneodo",
+  "model": "ablation1_rm-pass",
+  "seed": 3
+}

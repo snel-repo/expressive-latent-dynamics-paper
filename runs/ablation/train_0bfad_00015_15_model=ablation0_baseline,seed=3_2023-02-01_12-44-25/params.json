@@ -1,0 +1,5 @@
+{
+  "datamodule": "arneodo",
+  "model": "ablation0_baseline",
+  "seed": 3
+}
