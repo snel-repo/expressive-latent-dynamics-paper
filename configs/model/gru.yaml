@@ -9,3 +9,5 @@ latent_size: 25
 learning_rate: 1.0e-3
 weight_decay: 1.0e-4
 dropout: 0.05
+points_per_group: 70
+epochs_per_group: 3000

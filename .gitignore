@@ -1,6 +1,7 @@
 runs/user_runs
 datasets/*100_2000S*
 scripts/analysis/untracked
+notebooks
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

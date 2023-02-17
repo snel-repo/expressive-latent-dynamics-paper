@@ -19,8 +19,8 @@ def get_results(multirun_dir):
         try:
             # Load the metrics
             metrics = pd.read_csv(dirpath / "metrics.csv")
-            # Get last 500 epochs of validation metrics and remove "valid" from name
-            metrics = metrics[metrics.epoch > metrics.epoch.max() - 500]
+            # Get last 100 epochs of validation metrics and remove "valid" from name
+            metrics = metrics[metrics.epoch > metrics.epoch.max() - 100]
             metrics = metrics[[col for col in metrics if "valid" in col]].dropna()
             metrics = metrics.rename(
                 {col: col.replace("valid/", "") for col in metrics}, axis=1
@@ -42,15 +42,15 @@ def get_results(multirun_dir):
 if __name__ == "__main__":
 
     RUNS_HOME = Path("../../runs")
-    SUBFOLDER = "user_runs/multi/20230201_ablation"
+    SUBFOLDER = "ablation"
 
     results = get_results(RUNS_HOME / SUBFOLDER)
     rng = np.random.default_rng(42)
     order = [
         ("ablation0_baseline", "NODE", "mediumseagreen"),
         ("ablation3_rm-gradual", "No incr.", "lightseagreen"),
-        ("ablation1_rm-pass", "No p.t.", "mediumturquoise"),
         ("ablation2_rm-mlp", "No MLP", "turquoise"),
+        ("ablation1_rm-pass", "No p.t.", "mediumturquoise"),
         ("ablation4_vanilla", "Vanilla", "blueviolet"),
     ]
     fig, ax = plt.subplots(figsize=(2, 2))

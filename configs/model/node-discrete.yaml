@@ -7,7 +7,7 @@ rnn_cell:
   dt: 0.1
 input_size: ${datamodule.obs_dim}
 encoder_size: 64
-latent_size: 3
+latent_size: 10
 learning_rate: 5.0e-4
 weight_decay: 0.0
 dropout: 0.05

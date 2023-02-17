@@ -47,6 +47,7 @@ if __name__ == "__main__":
         "Lorenz": (("gru_lorenz", "node_lorenz"), 3),
         "Arneodo100": (("arneodo100",), 3),
         "MackeyGlass100": (("mackeyglass100",), 10),
+        "MacArthur100": (("macarthur100", ), 10),
     }
 
     for sys_name, (subfolder, true_dim) in SUBFOLDER_MAP.items():
@@ -60,6 +61,7 @@ if __name__ == "__main__":
             results = pd.concat([gru_results, node_results])
         else:
             results = get_results(RUNS_HOME / subfolder[0])
+            results["model"] = results["model"].str.replace("-discrete", "")
             results["model"] = results["model"].str.upper()
         # Fill for runs that used the default seed
         results = results.fillna({"seed": 0})

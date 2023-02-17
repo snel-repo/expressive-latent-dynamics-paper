@@ -5,6 +5,6 @@ latent_size: 3
 learning_rate: 5.0e-3
 weight_decay: 1.0e-5
 dropout: 0.05
-vf_hidden_size: 128
+mlp_hidden_dims: [128]
 points_per_group: 5
 epochs_per_group: 150

@@ -1,0 +1,8 @@
+_target_: paper_src.data.ChaoticDataModule
+system: MacArthur
+obs_dim: 100
+n_samples: 2000
+n_timesteps: 70
+pts_per_period: 70
+seed: 0
+batch_size: 650

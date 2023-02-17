@@ -145,18 +145,19 @@ class RNNLatentSAE(AbstractLatentSAE):
 class NODELatentSAE(AbstractLatentSAE):
     def __init__(
         self,
-        vf_hidden_size: int,
+        mlp_hidden_dims: list[int],
         **kwargs,
     ):
         super().__init__(**kwargs)
         self.save_hyperparameters()
         latent_size = self.hparams.latent_size
         # Define the vector field
-        vector_field = nn.Sequential(
-            nn.Linear(latent_size, vf_hidden_size),
-            nn.Tanh(),
-            nn.Linear(vf_hidden_size, latent_size),
-        )
+        layers = []
+        layer_in_dim = latent_size
+        for layer_out_dim in mlp_hidden_dims:
+            layers.extend([nn.Linear(layer_in_dim, layer_out_dim), nn.Tanh()])
+            layer_in_dim = layer_out_dim
+        vector_field = nn.Sequential(*layers, nn.Linear(layer_in_dim, latent_size))
         # Define the NeuralODE decoder and readout network
         self.decoder = NeuralODE(vector_field)
 
@@ -187,9 +188,9 @@ class AblatedNODECell(nn.RNNCell):
             layers = []
             layer_in_dim = hidden_size + input_size
             for layer_out_dim in mlp_hidden_dims:
-                layers.extend([nn.Linear(layer_in_dim, layer_out_dim), nn.ReLU()])
+                layers.extend([nn.Linear(layer_in_dim, layer_out_dim), nn.Tanh()])
                 layer_in_dim = layer_out_dim
-            self.mlp = nn.Sequential(*layers, nn.Linear(layer_in_dim, hidden_size))            
+            self.mlp = nn.Sequential(*layers, nn.Linear(layer_in_dim, hidden_size))
 
     def forward(self, input, hidden):
         if hasattr(self, "mlp"):

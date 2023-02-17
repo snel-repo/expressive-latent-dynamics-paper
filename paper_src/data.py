@@ -55,7 +55,7 @@ class ChaoticDataModule(pl.LightningDataModule):
             resample=True,
             pts_per_period=hps.pts_per_period,
             return_times=True,
-            standardize=False,
+            standardize=self.model.name in ["MacArthur"],
         )
         # Project into observation space
         latent_dim = self.model.embedding_dimension
