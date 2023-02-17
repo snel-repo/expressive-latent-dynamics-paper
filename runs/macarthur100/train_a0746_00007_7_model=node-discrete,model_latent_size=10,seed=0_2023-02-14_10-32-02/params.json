@@ -1,0 +1,6 @@
+{
+  "datamodule": "macarthur100",
+  "model": "node-discrete",
+  "model.latent_size": 10,
+  "seed": 0
+}

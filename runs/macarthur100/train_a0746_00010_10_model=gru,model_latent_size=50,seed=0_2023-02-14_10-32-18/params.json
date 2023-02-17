@@ -1,0 +1,6 @@
+{
+  "datamodule": "macarthur100",
+  "model": "gru",
+  "model.latent_size": 50,
+  "seed": 0
+}
