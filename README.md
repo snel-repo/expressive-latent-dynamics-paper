@@ -1,11 +1,11 @@
 # Expressive architectures enhance interpretability of dynamics-based neural population models
 Experiments that probe the relationship between expressivity and interpretability in models of neural population dynamics.
 
-If you find this code useful in your research, please cite the accompanying preprint:
+If you find this code useful in your research, please cite the accompanying publication:
 
->Sedler, A, Versteeg, C, Pandarinath, C. "Expressive architectures enhance interpretability of dynamics-based neural population models". arXiv 2022. https://doi.org/10.48550/arXiv.2212.03771.
+>A. Sedler, C. Versteeg, and C. Pandarinath, “Expressive architectures enhance interpretability of dynamics-based neural population models,” Neurons, Behavior, Data analysis, and Theory, 2023.
 
-[![arXiv](https://img.shields.io/badge/arXiv-2212.03771-b31b1b.svg)](https://doi.org/10.48550/arXiv.2212.03771)
+[![NBDT](https://img.shields.io/badge/NBDT-doi.org/10.51628/001c.73987-cc006c.svg)](https://doi.org/10.51628/001c.73987)
 
 ## Codebase Structure
 - `paper_src` - Source code that defines core dataset generation, model architecture, training, and evaluation functionality
